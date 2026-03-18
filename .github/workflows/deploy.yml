@@ -1,0 +1,65 @@
+name: Application — Build & Deploy
+
+# Triggers: runs on push to main when app files change.
+# Also waits for the infra workflow to succeed first on first run.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build Docker image & Deploy to App Service
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Check out code ───────────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Log in to Azure ──────────────────────────────────────────────────
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ── 3. Log in to Azure Container Registry ──────────────────────────────
+      - name: Log in to ACR
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+
+      # ── 4. Generate a unique image tag using the Git commit SHA ────────────
+      #       This ensures every build produces a uniquely tagged image,
+      #       so App Service always pulls the latest version.
+      - name: Set image tag
+        id: tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+
+      # ── 5. Build the Docker image ───────────────────────────────────────────
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ secrets.ACR_NAME }}.azurecr.io/hello-world:${{ steps.tag.outputs.IMAGE_TAG }} \
+            -t ${{ secrets.ACR_NAME }}.azurecr.io/hello-world:latest \
+            ./app
+
+      # ── 6. Push both tags to ACR ────────────────────────────────────────────
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/hello-world:${{ steps.tag.outputs.IMAGE_TAG }}
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/hello-world:latest
+
+      # ── 7. Update App Service to use the new image ──────────────────────────
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.APP_SERVICE_NAME }}
+          images: ${{ secrets.ACR_NAME }}.azurecr.io/hello-world:${{ steps.tag.outputs.IMAGE_TAG }}
+
+      # ── 8. Print the live URL ───────────────────────────────────────────────
+      - name: Print app URL
+        run: |
+          echo "✅ Deployed: https://${{ secrets.APP_SERVICE_NAME }}.azurewebsites.net"
