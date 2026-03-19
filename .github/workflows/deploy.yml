@@ -42,6 +42,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
+            -f ./app/Dockerfile \
             -t ${{ secrets.ACR_NAME }}.azurecr.io/hello-world:${{ steps.tag.outputs.IMAGE_TAG }} \
             -t ${{ secrets.ACR_NAME }}.azurecr.io/hello-world:latest \
             ./app
