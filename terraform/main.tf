@@ -19,7 +19,7 @@ resource "azurerm_service_plan" "main" {
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   os_type             = "Linux"
-  sku_name            = "B1"  # Basic tier — cheapest paid tier that supports containers
+  sku_name            = "P0V4"  # Basic tier — cheapest paid tier that supports containers
 }
 
 # ── App Service (Web App for Containers) ─────────────────────────────────────
