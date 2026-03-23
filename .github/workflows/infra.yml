@@ -1,7 +1,5 @@
 name: Infrastructure — Terraform
 
-# Triggers: runs on push to main, but only when Terraform files change.
-# Also allows manual triggering from the GitHub Actions UI.
 on:
   push:
     branches:
@@ -15,29 +13,24 @@ jobs:
     name: Terraform Plan & Apply
     runs-on: ubuntu-latest
 
-    # Set the working directory for all run steps in this job
     defaults:
       run:
         working-directory: terraform
 
     steps:
-      # ── 1. Check out your repository code ──────────────────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── 2. Log in to Azure using the service principal credentials ──────────
       - name: Log in to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # ── 3. Install Terraform on the runner ──────────────────────────────────
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.9.0"
 
-      # ── 4. Initialise Terraform (connects to Azure Blob Storage backend) ────
       - name: Terraform Init
         run: |
           terraform init \
@@ -51,17 +44,20 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
 
-      # ── 5. Validate the Terraform syntax ───────────────────────────────────
       - name: Terraform Validate
         run: terraform validate
 
-      # ── 6. Show what Terraform will create/change/destroy ──────────────────
       - name: Terraform Plan
         run: |
           terraform plan \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="acr_name=${{ secrets.ACR_NAME }}" \
-            -var="app_service_name=${{ secrets.APP_SERVICE_NAME }}" \
+            -var="web_app_name=${{ secrets.WEB_APP_NAME }}" \
+            -var="api_app_name=${{ secrets.API_APP_NAME }}" \
+            -var="sql_server_name=${{ secrets.SQL_SERVER_NAME }}" \
+            -var="sql_database_name=${{ secrets.SQL_DATABASE_NAME }}" \
+            -var="sql_admin_password=${{ secrets.SQL_ADMIN_PASSWORD }}" \
+            -var="alert_email=${{ secrets.ALERT_EMAIL }}" \
             -out=tfplan
         env:
           ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
@@ -69,7 +65,6 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
 
-      # ── 7. Apply the plan — actually create/update Azure resources ──────────
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
         env:
