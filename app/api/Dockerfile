@@ -1,17 +1,22 @@
 FROM python:3.13-slim
 
-# Install the Microsoft ODBC driver for SQL Server (required by pyodbc)
 RUN apt-get update && apt-get install -y \
-    curl \
-    gnupg \
-    unixodbc-dev \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-    && curl https://packages.microsoft.com/config/debian/12/prod.list \
+        curl \
+        gnupg \
+        unixodbc-dev \
+    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+        -o /usr/share/keyrings/microsoft.asc \
+    && gpg --dearmor < /usr/share/keyrings/microsoft.asc \
+        > /usr/share/keyrings/microsoft-prod.gpg \
+    && curl -fsSL https://packages.microsoft.com/config/debian/12/prod.list \
+        -o /tmp/mssql.list \
+    && sed 's|signed-by=.*|signed-by=/usr/share/keyrings/microsoft-prod.gpg|' \
+        /tmp/mssql.list \
         > /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update \
     && ACCEPT_EULA=Y apt-get install -y msodbcsql18 \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/mssql.list /usr/share/keyrings/microsoft.asc
 
 WORKDIR /app
 
