@@ -17,11 +17,11 @@
 #>
 
 param (
-    [Parameter(Mandatory)] [string] $SqlServerFqdn,
-    [Parameter(Mandatory)] [string] $SqlDatabaseName,
-    [Parameter(Mandatory)] [string] $SqlAdminLogin,
+    [Parameter(Mandatory)] [string]       $SqlServerFqdn,
+    [Parameter(Mandatory)] [string]       $SqlDatabaseName,
+    [Parameter(Mandatory)] [string]       $SqlAdminLogin,
     [Parameter(Mandatory)] [SecureString] $SqlAdminPassword,
-    [Parameter(Mandatory)] [string] $ApiAppServiceName
+    [Parameter(Mandatory)] [string]       $ApiAppServiceName
 )
 
 # Install SqlServer module if not already present
