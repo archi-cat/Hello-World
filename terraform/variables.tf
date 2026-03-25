@@ -93,3 +93,13 @@ variable "gateway_subnet_prefix" {
   type        = string
   default     = "10.0.3.0/24"
 }
+
+variable "sql_entra_admin_login" {
+  description = "UPN of the Entra ID user to set as SQL Server admin (e.g. you@domain.com)"
+  type        = string
+}
+
+variable "sql_entra_admin_object_id" {
+  description = "Object ID of the Entra ID user to set as SQL Server admin"
+  type        = string
+}

@@ -238,7 +238,7 @@ resource "azurerm_linux_web_app" "api" {
   identity {
     type = "SystemAssigned"
   }
-
+  
   site_config {
     application_stack {
       docker_image_name        = "${var.acr_name}.azurecr.io/hello-world-api:${var.docker_image_tag}"
@@ -268,11 +268,11 @@ resource "azurerm_mssql_server" "main" {
   version                      = "12.0"
   administrator_login          = var.sql_admin_login
   administrator_login_password = var.sql_admin_password
-
-  # Allow Azure services (including App Service) to reach the SQL server
   azuread_administrator {
-    login_username = "sqladmin-aad"
-    object_id      = azurerm_linux_web_app.api.identity[0].principal_id
+    login_username = var.sql_entra_admin_login
+    object_id      = var.sql_entra_admin_object_id
+    azuread_authentication_only = false
+
   }
 }
 
