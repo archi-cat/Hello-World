@@ -33,11 +33,6 @@ output "api_identity_principal_id" {
   value       = azurerm_linux_web_app.api.identity[0].principal_id
 }
 
-output "web_app_insights_key" {
-  description = "Web App Insights instrumentation key"
-  value       = azurerm_application_insights.web.instrumentation_key
-}
-
 output "api_identity_client_id" {
   description = "API Managed Identity client ID"
   value       = azurerm_linux_web_app.api.identity[0].principal_id
