@@ -58,6 +58,8 @@ jobs:
             -var="sql_database_name=${{ secrets.SQL_DATABASE_NAME }}" \
             -var="sql_admin_password=${{ secrets.SQL_ADMIN_PASSWORD }}" \
             -var="alert_email=${{ secrets.ALERT_EMAIL }}" \
+            -var="sql_entra_admin_login=${{ secrets.SQL_ENTRA_ADMIN_LOGIN }}" \
+            -var="sql_entra_admin_object_id=${{ secrets.SQL_ENTRA_ADMIN_OBJECT_ID }}" \
             -out=tfplan
         env:
           ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}

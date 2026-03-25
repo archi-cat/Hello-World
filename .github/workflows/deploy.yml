@@ -81,3 +81,31 @@ jobs:
           echo "Web app: https://${{ secrets.WEB_APP_NAME }}.azurewebsites.net"
           echo "API:     https://${{ secrets.API_APP_NAME }}.azurewebsites.net"
           echo "Tag:     ${{ steps.tag.outputs.IMAGE_TAG }}"
+
+  configure-sql:
+    name: Configure SQL Managed Identity access
+    runs-on: windows-latest
+    needs: build-and-deploy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Wait for Managed Identity to propagate
+        shell: pwsh
+        run: Start-Sleep -Seconds 30
+
+      - name: Run SQL setup script
+        shell: pwsh
+        run: |
+          ./scripts/Set-SqlManagedIdentity.ps1 `
+            -SqlServerFqdn "${{ secrets.SQL_SERVER_NAME }}.database.windows.net" `
+            -SqlDatabaseName "${{ secrets.SQL_DATABASE_NAME }}" `
+            -SqlAdminLogin "${{ secrets.SQL_ADMIN_LOGIN }}" `
+            -SqlAdminPassword "${{ secrets.SQL_ADMIN_PASSWORD }}" `
+            -ApiAppServiceName "${{ secrets.API_APP_NAME }}"
