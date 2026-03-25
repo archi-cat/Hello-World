@@ -18,6 +18,11 @@ output "acr_login_server" {
   value       = azurerm_container_registry.main.login_server
 }
 
+output "acr_admin_username" {
+  description = "ACR admin username"
+  value       = azurerm_container_registry.main.admin_username
+}
+
 output "sql_server_fqdn" {
   description = "SQL Server fully qualified domain name"
   value       = azurerm_mssql_server.main.fully_qualified_domain_name
@@ -25,6 +30,16 @@ output "sql_server_fqdn" {
 
 output "api_identity_principal_id" {
   description = "The API's Managed Identity principal ID — needed to grant SQL access"
+  value       = azurerm_linux_web_app.api.identity[0].principal_id
+}
+
+output "web_app_insights_key" {
+  description = "Web App Insights instrumentation key"
+  value       = azurerm_application_insights.web.instrumentation_key
+}
+
+output "api_identity_client_id" {
+  description = "API Managed Identity client ID"
   value       = azurerm_linux_web_app.api.identity[0].principal_id
 }
 
