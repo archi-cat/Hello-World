@@ -32,6 +32,9 @@ if (-not (Get-Module -ListAvailable -Name SqlServer)) {
 
 Import-Module SqlServer
 
+# Mark the SecureString as read-only — required by SqlCredential
+$SqlAdminPassword.MakeReadOnly()
+
 # Build a SqlCredential from the login and SecureString password —
 # the password is never decrypted to a plain string at any point
 $sqlCredential = New-Object System.Data.SqlClient.SqlCredential(
