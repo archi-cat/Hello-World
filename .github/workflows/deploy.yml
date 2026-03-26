@@ -103,14 +103,7 @@ jobs:
       - name: Run SQL setup script
         shell: pwsh
         run: |
-          $securePassword = ConvertTo-SecureString `
-            -String "${{ secrets.SQL_ADMIN_PASSWORD }}" `
-            -AsPlainText `
-            -Force  
-
           ./scripts/Set-SqlManagedIdentity.ps1 `
             -SqlServerFqdn "${{ secrets.SQL_SERVER_NAME }}.database.windows.net" `
             -SqlDatabaseName "${{ secrets.SQL_DATABASE_NAME }}" `
-            -SqlAdminLogin "${{ secrets.SQL_ADMIN_LOGIN }}" `
-            -SqlAdminPassword $securePassword `
             -ApiAppServiceName "${{ secrets.API_APP_NAME }}"
