@@ -269,8 +269,8 @@ resource "azurerm_mssql_server" "main" {
   administrator_login          = var.sql_admin_login
   administrator_login_password = var.sql_admin_password
   azuread_administrator {
-    login_username = var.sql_entra_admin_login
-    object_id      = var.sql_entra_admin_object_id
+    login_username = var.sql_entra_admin_group_name
+    object_id      = var.sql_entra_admin_group_object_id
     azuread_authentication_only = false
 
   }

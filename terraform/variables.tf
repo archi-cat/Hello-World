@@ -94,12 +94,12 @@ variable "gateway_subnet_prefix" {
   default     = "10.0.3.0/24"
 }
 
-variable "sql_entra_admin_login" {
-  description = "UPN of the Entra ID user to set as SQL Server admin (e.g. you@domain.com)"
+variable "sql_entra_admin_group_name" {
+  description = "Display name of the Entra security group to set as SQL Server AD admin"
   type        = string
 }
 
-variable "sql_entra_admin_object_id" {
-  description = "Object ID of the Entra ID user to set as SQL Server admin"
+variable "sql_entra_admin_group_object_id" {
+  description = "Object ID of the Entra security group to set as SQL Server AD admin"
   type        = string
 }
