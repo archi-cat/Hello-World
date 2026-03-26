@@ -28,10 +28,6 @@ output "sql_server_fqdn" {
   value       = azurerm_mssql_server.main.fully_qualified_domain_name
 }
 
-output "api_identity_principal_id" {
-  description = "The API's Managed Identity principal ID — needed to grant SQL access"
-  value       = azurerm_linux_web_app.api.identity[0].principal_id
-}
 
 output "api_identity_client_id" {
   description = "API Managed Identity client ID"
