@@ -3,7 +3,8 @@
     Grants the API's Managed Identity least-privilege access to the SQL database.
 
 .DESCRIPTION
-    Connects to the SQL database using SQL admin credentials and:
+    Connects to the SQL database using an Azure AD access token obtained from
+    the Azure CLI (the runner is already authenticated via azure/login) and:
       1. Creates an external user mapped to the API's Managed Identity
       2. Grants db_datareader — allows SELECT on all tables
       3. Grants db_datawriter — allows INSERT, UPDATE, DELETE on all tables
@@ -12,16 +13,14 @@
     already exists the CREATE USER statement is skipped gracefully.
 
 .NOTES
-    Requires the SqlServer PowerShell module.
+    Requires the Az CLI to be logged in (handled by azure/login in the workflow).
     Runs as a step in the GitHub Actions deploy workflow after Terraform apply.
 #>
 
 param (
-    [Parameter(Mandatory)] [string]       $SqlServerFqdn,
-    [Parameter(Mandatory)] [string]       $SqlDatabaseName,
-    [Parameter(Mandatory)] [string]       $SqlAdminLogin,
-    [Parameter(Mandatory)] [SecureString] $SqlAdminPassword,
-    [Parameter(Mandatory)] [string]       $ApiAppServiceName
+    [Parameter(Mandatory)] [string] $SqlServerFqdn,
+    [Parameter(Mandatory)] [string] $SqlDatabaseName,
+    [Parameter(Mandatory)] [string] $ApiAppServiceName
 )
 
 # Install SqlServer module if not already present
@@ -32,26 +31,28 @@ if (-not (Get-Module -ListAvailable -Name SqlServer)) {
 
 Import-Module SqlServer
 
-# Mark the SecureString as read-only — required by SqlCredential
-$SqlAdminPassword.MakeReadOnly()
+# Obtain an Azure AD access token for the SQL Database resource.
+# The runner is already authenticated via the azure/login workflow step.
+Write-Host "Obtaining Azure AD access token for SQL Database..."
+$tokenJson    = az account get-access-token --resource https://database.windows.net/ | ConvertFrom-Json
+$accessToken  = $tokenJson.accessToken
 
-# Build a SqlCredential from the login and SecureString password —
-# the password is never decrypted to a plain string at any point
-$sqlCredential = New-Object System.Data.SqlClient.SqlCredential(
-    $SqlAdminLogin,
-    $SqlAdminPassword
-)
+if (-not $accessToken) {
+    Write-Error "Failed to obtain Azure AD access token. Ensure azure/login step has run."
+    exit 1
+}
 
+# Build connection string — no credentials here, auth is via the token
 $connectionString = "Server=$SqlServerFqdn;Database=$SqlDatabaseName;" +
                     "Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 
 Write-Host "Connecting to $SqlServerFqdn / $SqlDatabaseName..."
 
 try {
-    $connection = New-Object System.Data.SqlClient.SqlConnection(
-        $connectionString,
-        $sqlCredential
-    )
+    $connection = New-Object System.Data.SqlClient.SqlConnection $connectionString
+
+    # Attach the Azure AD token to the connection
+    $connection.AccessToken = $accessToken
     $connection.Open()
     Write-Host "Connected successfully."
 
