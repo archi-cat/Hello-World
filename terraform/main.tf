@@ -268,6 +268,13 @@ resource "azurerm_mssql_server" "main" {
   version                      = "12.0"
   administrator_login          = var.sql_admin_login
   administrator_login_password = var.sql_admin_password
+
+  # System-assigned identity — needed so the SQL server can look up
+  # Entra ID objects when resolving FROM EXTERNAL PROVIDER
+  identity {
+    type = "SystemAssigned"
+  }
+  
   azuread_administrator {
     login_username = var.sql_entra_admin_group_name
     object_id      = var.sql_entra_admin_group_object_id

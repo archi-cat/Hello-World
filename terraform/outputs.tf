@@ -49,3 +49,8 @@ output "api_app_insights_key" {
   value       = azurerm_application_insights.api.instrumentation_key
   sensitive   = true
 } 
+
+output "sql_server_identity_principal_id" {
+  description = "SQL server system-assigned identity principal ID — needed to assign Directory Readers role"
+  value       = azurerm_mssql_server.main.identity[0].principal_id
+}
