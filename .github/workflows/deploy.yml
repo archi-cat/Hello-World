@@ -8,6 +8,10 @@ on:
       - 'app/**'
   workflow_dispatch:
 
+permissions:
+  id-token: write   # request OIDC token
+  contents: read    # checkout code
+
 jobs:
   build-and-deploy:
     name: Build and deploy web and API
@@ -20,7 +24,9 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
         run: az acr login --name ${{ secrets.ACR_NAME }}
@@ -87,6 +93,10 @@ jobs:
     runs-on: windows-latest
     needs: build-and-deploy
 
+    permissions:
+      id-token: write   # request OIDC token
+      contents: read    # checkout code
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -94,7 +104,9 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Wait for Managed Identity to propagate
         shell: pwsh
