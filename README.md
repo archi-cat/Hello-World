@@ -95,7 +95,7 @@ az storage container create `
   --account-name stterraformstateyourname
 ```
 
-### 3. Create the GitHub Actions service principal
+### 3. Create the GitHub Actions service principal and federated identity(OIDC)
 
 ```powershell
 $SUBSCRIPTION_ID = az account show --query id --output tsv
@@ -104,10 +104,36 @@ az ad sp create-for-rbac `
   --name "sp-hello-world-github" `
   --role Contributor `
   --scopes /subscriptions/$SUBSCRIPTION_ID `
-  --sdk-auth
-```
 
-Copy the full JSON output — it's needed for GitHub secrets.
+$SP_APP_ID = az ad sp list `
+  --display-name "sp-hello-world-github" `
+  --query "[0].appId" --output tsv
+
+# Write the federated credential definition to a temp file
+$credentialJson = @{
+    name        = "github-main"
+    issuer      = "https://token.actions.githubusercontent.com"
+    subject     = "repo:YOUR_GITHUB_USERNAME/hello-world-azure:ref:refs/heads/main"
+    description = "GitHub Actions — main branch"
+    audiences   = @("api://AzureADTokenExchange")
+} | ConvertTo-Json
+
+$tempFile = New-TemporaryFile
+$credentialJson | Out-File -FilePath $tempFile.FullName -Encoding utf8
+
+# Pass the file path instead of an inline JSON string
+az ad app federated-credential create `
+  --id $SP_APP_ID `
+  --parameters $tempFile.FullName
+
+# Clean up
+Remove-Item $tempFile.FullName
+
+# Verify
+az ad app federated-credential list `
+  --id $SP_APP_ID `
+  --output table
+```
 
 ### 4. Create the Entra SQL admin security group
 
@@ -139,9 +165,7 @@ Go to your repository → **Settings → Secrets and variables → Actions** and
 
 | Secret | Description |
 |---|---|
-| `AZURE_CREDENTIALS` | Full JSON from the service principal creation step |
 | `AZURE_CLIENT_ID` | `clientId` from the JSON |
-| `AZURE_CLIENT_SECRET` | `clientSecret` from the JSON |
 | `AZURE_SUBSCRIPTION_ID` | `subscriptionId` from the JSON |
 | `AZURE_TENANT_ID` | `tenantId` from the JSON |
 | `TF_STATE_RESOURCE_GROUP` | `rg-terraform-state` |

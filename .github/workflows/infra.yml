@@ -8,6 +8,10 @@ on:
       - 'terraform/**'
   workflow_dispatch:
 
+permissions:
+  id-token: write   # request OIDC token
+  contents: read    # checkout code
+
 jobs:
   terraform:
     name: Terraform Plan & Apply
@@ -24,7 +28,9 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
@@ -40,9 +46,9 @@ jobs:
             -backend-config="key=hello-world-appservice.tfstate"
         env:
           ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET:   ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
+          ARM_USE_OIDC:        true
 
       - name: Terraform Validate
         run: terraform validate
@@ -63,14 +69,14 @@ jobs:
             -out=tfplan
         env:
           ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET:   ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
+          ARM_USE_OIDC:        true
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
         env:
           ARM_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET:   ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
+          ARM_USE_OIDC:        true
