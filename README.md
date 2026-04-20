@@ -1,13 +1,4 @@
-# Hello-World
-
-This is a 2-tier application hosted in Azure, which is comprised of a web client front end that talks to an API that reads and writes on an SQL managed database. The application is exposed to the internet via an Application Gateway.
-
-Infrastructure components:
-  - Application gateway 
-  -  
-
-
-  # Hello World — Azure Two-Tier Application
+# Hello World — Azure Two-Tier Application
 
 A two-tier Python web application deployed on Azure using infrastructure-as-code and fully automated CI/CD pipelines. Built as a learning project covering Azure App Service, Azure SQL Database, Application Gateway, Managed Identity, Application Insights, and Terraform.
 
