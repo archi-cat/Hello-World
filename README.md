@@ -135,6 +135,8 @@ az ad app federated-credential list `
   --output table
 ```
 
+Note: The subject field of the credential(e.g.: "repo:YOUR_GITHUB_USERNAME/hello-world-azure:ref:refs/heads/main") needs to match exactly the name of the repo and branch as it's case sensitive.
+
 ### 4. Create the Entra SQL admin security group
 
 The SQL Server's Entra admin is a security group containing both your personal user and the GitHub Actions service principal. This allows the pipeline to connect to the database via Azure AD to provision the API's Managed Identity as a DB user.
