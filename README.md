@@ -6,6 +6,7 @@ A two-tier Python web application deployed on Azure using infrastructure-as-code
 
 ## Architecture
 
+```
 User (internet)
 │
 ▼
@@ -19,6 +20,7 @@ API (Azure App Service) ← Flask, checks SQL connectivity
 │  Managed Identity (no password)
 ▼
 Azure SQL Database (Basic, 5 DTUs)
+```
 
 Both App Services sit inside a VNet with dedicated subnets. Each has its own Application Insights instance feeding into a shared Log Analytics workspace. A metric alert fires when DTU consumption exceeds 85% for 20 minutes.
 
@@ -26,6 +28,7 @@ Both App Services sit inside a VNet with dedicated subnets. Each has its own App
 
 ## Repository structure
 
+```
 hello-world/
 ├── app/
 │   ├── web/                        # Flask web app
@@ -48,6 +51,7 @@ hello-world/
 └── workflows/
 ├── infra.yml               # Terraform plan + apply
 └── deploy.yml              # Docker build, push, deploy + SQL setup
+```
 
 ---
 
